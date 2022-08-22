@@ -28,6 +28,8 @@ Cheat-sheet
   - optional parameter: `--env <var_name>=<value>` -- there can be multiple of them
   - optional parameter: `--env-file ./<filename>` (usually filename is .env)
     - CAREFUL! Do not commit it to git if it has security sensitive information
+  - optional parameter: `--network <network_name>` uses this network for container-to-container communication (you need to first create the network)
+- `docker network create <network_name>` creates a network for container-to-container communication
 - `docker start <container_name>`
   - starts a container (you can find stopped container names with `docker ps -a`)
   - does not block the terminal
@@ -125,3 +127,8 @@ Notes
     - For `nodejs`, to not need to restart the server on file changes, I can use `nodemon` to restart server when any file changes -- does not work on windows with WSL2 unless the source code is stored in WSL filesystem 
 - Arguments can be accessed in the dockerfile only. They are like build-time variables. But you can also expose it to the application code by declaring an env variable with that value
 - Environment variables can be accessed in both Dockerfile or application code. They are more like run-time variables.
+- Networking
+  - By default, containers can send requests and receive data from the internet
+  - By default, containers cannot send requests to localhost ports. But if you replace `localhost` in app code URLs with `host.docker.internal` then it works, because it's replaced with the host IP address as seen from the container.
+  - By default, containers can talk to other containers if you know their IP address (by using `docker container inspect` command). To make things easier, I can use the `--network <network_name>` parameter of `docker run` and specify the same network name for communicating nodes, then in the app code use container name as host name, for example `http://my_container:3000` talks to container named my_container
+
