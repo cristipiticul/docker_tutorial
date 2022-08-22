@@ -7,6 +7,7 @@ Cheat-sheet
 - `docker build .`
   - builds the Dockerfile in current dir and prints an id for it
   - optional parameter: `-t <name[:tag]>` gives the image a name and optionally a tag (version); the image name:tag can be used instead of id in the commands below
+  - optional parameter: `--build-arg <arg_name>=<value>` specifies an argument 
 - `docker tag <image_name> <new_image_name>`
   - creates a clone of an image with a different name/tag
 - `docker run <image_id/name_of_dockerhub_image>`
@@ -24,6 +25,9 @@ Cheat-sheet
       - WARNING! It overrides all files in `container_path` (if in `Dockerfile` you installed something there, like `npm install` -> `node_modules`, it won't be there). Use anonymous volumes for that case!!! Add a `-v /app/node_modules` so that it's stored separately. If multiple volumes match a path (clash), the one with longer path wins.
       - on MacOS, you might need to add the folder in Docker GUI -> Resources -> File Sharing
   - Common usage: `docker run -d --rm -p 3000:80 --name container_name -v persistent_volume:/app/path_to_persistent_folder -v "$(pwd)/source_code_path:/app" -v /app/image_path_we_dont_want_to_override image_name`
+  - optional parameter: `--env <var_name>=<value>` -- there can be multiple of them
+  - optional parameter: `--env-file ./<filename>` (usually filename is .env)
+    - CAREFUL! Do not commit it to git if it has security sensitive information
 - `docker start <container_name>`
   - starts a container (you can find stopped container names with `docker ps -a`)
   - does not block the terminal
@@ -76,6 +80,13 @@ hint2: each docker command
 - `RUN <command>`
   - example: "RUN npm install"
   - obs: do NOT start the app using RUN, that's not part of the image, but the container's job
+- `ENV <var_name> <default_value>`
+  - sets an env variable;
+  - it can also be used in the other commands using $ (e.g. `$PORT`)
+  - NOT RECOMMENDED for security sensitive data
+- `ARG <arg_name>[=<default_value>]`
+  - declares a build time argument. Can be used in other commands (except CMD) in Dockerfile by putting a $ before the arg name.
+  - obs: if you put it as late as possible, docker build will be faster in case of arg change
 - `EXPOSE <port_number>`
   - example: "expose 80" - allow communication on that port with host machine
   - obs: it is optional, but best practice.
@@ -112,3 +123,5 @@ Notes
   - Bind Mounts are mappings between container and host machine. We can configure where the container path is on the host machine. Useful for source code during development, because otherwise, if we copy it in the image, it would take a lot of time after each code change.
     - Careful! See warning at cheatsheet for `docker run` --> `-v` parameter
     - For `nodejs`, to not need to restart the server on file changes, I can use `nodemon` to restart server when any file changes -- does not work on windows with WSL2 unless the source code is stored in WSL filesystem 
+- Arguments can be accessed in the dockerfile only. They are like build-time variables. But you can also expose it to the application code by declaring an env variable with that value
+- Environment variables can be accessed in both Dockerfile or application code. They are more like run-time variables.
